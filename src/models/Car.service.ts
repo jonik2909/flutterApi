@@ -1,7 +1,8 @@
 import Errors, { HttpCode } from "../libs/Errors";
 import CarModel from "../schema/Car.model";
 import { Message } from "../libs/Errors";
-import { Car, CarInput } from "../libs/types/car";
+import { Car, CarInput, CarUpdateInput } from "../libs/types/car";
+import { shapeIntoMongooseObjectId } from "../libs/config";
 
 class CarService {
   private readonly carModel;
@@ -21,6 +22,15 @@ class CarService {
       console.error("Error, model:createCar:", err);
       throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
     }
+  }
+  public async updateCar(input: CarUpdateInput): Promise<Car> {
+    const carId = shapeIntoMongooseObjectId(input._id);
+    const result = await this.carModel
+      .findByIdAndUpdate({ _id: carId }, input, { new: true })
+      .exec();
+
+    if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+    return result;
   }
 }
 

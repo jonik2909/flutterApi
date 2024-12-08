@@ -2,7 +2,7 @@ import Errors, { HttpCode, Message } from "../libs/Errors";
 import { T } from "../libs/types/common";
 import { NextFunction, Request, Response } from "express";
 import CarService from "../models/Car.service";
-import { Car, CarInput } from "../libs/types/car";
+import { Car, CarInput, CarUpdateInput } from "../libs/types/car";
 
 const carService = new CarService();
 
@@ -34,6 +34,22 @@ carController.createCar = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error, createCar:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+carController.updateCar = async (req: Request, res: Response) => {
+  try {
+    console.log("updateCar");
+    const input: CarUpdateInput = req.body;
+
+    if (req.file) input.carImage = req.file.path.replace(/\\/, "/");
+    const result: Car = await carService.updateCar(input);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, updateCar:", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }
