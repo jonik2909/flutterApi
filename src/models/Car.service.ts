@@ -23,6 +23,7 @@ class CarService {
       throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
     }
   }
+
   public async updateCar(input: CarUpdateInput): Promise<Car> {
     const carId = shapeIntoMongooseObjectId(input._id);
     const result = await this.carModel
@@ -30,6 +31,17 @@ class CarService {
       .exec();
 
     if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+    return result;
+  }
+
+  public async deleteCar(id: string): Promise<Car> {
+    id = shapeIntoMongooseObjectId(id);
+    const result = await this.carModel
+      .findByIdAndDelete({ _id: id }, { new: true })
+      .exec();
+
+    if (!result)
+      throw new Errors(HttpCode.BAD_REQUEST, Message.SOMETHING_WENT_WRONG);
     return result;
   }
 }

@@ -9,16 +9,16 @@ routerCar.get("/", async (req, res) => {
 
 routerCar.get("/all", carController.getCars);
 
-routerCar.post(
-  "/create",
-  uploader("cars").single("carImage"),
-  carController.createCar
-);
+routerCar.post("/create", carController.createCar);
+
+routerCar.post("/update", carController.updateCar);
 
 routerCar.post(
-  "/update",
+  "/upload/image",
   uploader("cars").single("carImage"),
-  carController.updateCar
+  carController.uploadImage
 );
+
+routerCar.post("/delete/:id", carController.deleteCar);
 
 export default routerCar;
