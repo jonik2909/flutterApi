@@ -38,6 +38,9 @@ class MemberService {
         { memberNick: 1, memberPassword: 1, memberStatus: 1 }
       )
       .exec();
+
+    console.log(input);
+
     if (!member) throw new Errors(HttpCode.NOT_FOUND, Message.NO_MEMBER_NICK);
     else if (member.memberStatus === MemberStatus.BLOCK) {
       throw new Errors(HttpCode.FORBIDDEN, Message.BLOCKED_USER);
@@ -52,6 +55,17 @@ class MemberService {
     }
 
     return await this.memberModel.findById(member._id).lean().exec();
+  }
+
+  public async getMember(member: Member, targetId: string): Promise<Member> {
+    const memberId = shapeIntoMongooseObjectId(member?._id);
+    targetId = shapeIntoMongooseObjectId(targetId);
+    const result = await this.memberModel
+      .findOne({ _id: targetId, memberStatus: MemberStatus.ACTIVE })
+      .exec();
+    if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+    return result;
   }
 }
 
