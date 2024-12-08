@@ -1,4 +1,4 @@
-import { LoginInput, MemberInput } from "../libs/types/member";
+import { ExtendedRequest, LoginInput, MemberInput } from "../libs/types/member";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { T } from "../libs/types/common";
 import { NextFunction, Request, Response } from "express";
@@ -46,6 +46,18 @@ bookController.login = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json({ member: result, accessToken: token });
   } catch (err) {
     console.log("Error, login:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+bookController.logout = (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("logout");
+    res.cookie("accessToken", null, { maxAge: 0, httpOnly: true });
+    res.status(HttpCode.OK).json({ logout: true });
+  } catch (err) {
+    console.log("Error, logout:", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }
