@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import { MORGAN_FORMAT } from "./libs/config";
 import { Server as SocketIOServer } from "socket.io";
 import http from "http";
+import routerCar from "./routerCar";
 
 /** 1-ENTRANCE **/
 const app = express();
@@ -30,6 +31,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 /** 4-ROUTERS **/
+app.use("/car", routerCar);
 app.use("/", router);
 
 const server = http.createServer(app);
