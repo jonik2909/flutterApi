@@ -29,7 +29,7 @@ const memberSchema = new Schema(
     },
 
     memberEmail: {
-      type: Number,
+      type: String,
       index: { unique: true, sparse: true },
     },
 

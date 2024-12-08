@@ -8,6 +8,7 @@ import { MORGAN_FORMAT } from "./libs/config";
 import { Server as SocketIOServer } from "socket.io";
 import http from "http";
 import routerCar from "./routerCar";
+import routerBook from "./routerBook";
 
 /** 1-ENTRANCE **/
 const app = express();
@@ -32,6 +33,7 @@ app.set("view engine", "ejs");
 
 /** 4-ROUTERS **/
 app.use("/car", routerCar);
+app.use("/book", routerBook);
 app.use("/", router);
 
 const server = http.createServer(app);
