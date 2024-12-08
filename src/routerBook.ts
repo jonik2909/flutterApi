@@ -9,6 +9,7 @@ routerBook.get(
   bookController.verifyAuth,
   bookController.logout
 );
+routerBook.get("/member/all", bookController.getMembers);
 routerBook.get(
   "/member/:id",
   bookController.retrieveAuth,

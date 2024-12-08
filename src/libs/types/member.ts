@@ -18,6 +18,14 @@ export interface Member {
   updatedAt: Date;
 }
 
+export interface MemberInquiry {
+  order: string;
+  page: number;
+  limit: number;
+  memberType?: MemberType;
+  search?: string;
+}
+
 export interface MemberInput {
   memberNick: string;
   memberPassword: string;

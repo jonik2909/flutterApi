@@ -1,4 +1,9 @@
-import { ExtendedRequest, LoginInput, MemberInput } from "../libs/types/member";
+import {
+  ExtendedRequest,
+  LoginInput,
+  MemberInput,
+  MemberInquiry,
+} from "../libs/types/member";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { T } from "../libs/types/common";
 import { NextFunction, Request, Response } from "express";
@@ -6,6 +11,7 @@ import { Member } from "../libs/types/member";
 import MemberService from "../models/Member.service";
 import AuthService from "../models/Auth.service";
 import { AUTH_TIMER } from "../libs/config";
+import { MemberType } from "../libs/enums/member.enum";
 
 const bookController: T = {};
 const memberService = new MemberService();
@@ -72,6 +78,30 @@ bookController.getMember = async (req: ExtendedRequest, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error, getMember:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+bookController.getMembers = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("getMembers");
+    const { page, limit, order, memberType, search } = req.query;
+    const inquiry: MemberInquiry = {
+      order: String(order),
+      page: Number(page),
+      limit: Number(limit),
+    };
+    if (memberType) {
+      inquiry.memberType = memberType as MemberType;
+    }
+    if (search) inquiry.search = String(search);
+
+    const result = await memberService.getMembers(inquiry);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, getMembers:", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }
