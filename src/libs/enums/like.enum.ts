@@ -1,4 +1,4 @@
-export enum ViewGroup {
+export enum LikeGroup {
   BOOK = "BOOK",
   MEMBER = "MEMBER",
 }
