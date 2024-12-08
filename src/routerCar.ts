@@ -1,5 +1,6 @@
 import express from "express";
 import carController from "./controllers/carController";
+import uploader from "./libs/utils/uploader";
 const routerCar = express.Router();
 
 routerCar.get("/", async (req, res) => {
@@ -7,6 +8,10 @@ routerCar.get("/", async (req, res) => {
 });
 
 routerCar.get("/all", carController.getCars);
-routerCar.get("/cars", carController.getCars);
+routerCar.post(
+  "/create",
+  uploader("cars").single("carImage"),
+  carController.createCar
+);
 
 export default routerCar;

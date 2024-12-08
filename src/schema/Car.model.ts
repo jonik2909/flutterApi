@@ -13,7 +13,7 @@ const carSchema = new Schema(
     },
 
     carPrice: {
-      type: String,
+      type: Number,
       required: true,
     },
 
