@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { BookCategory } from "../libs/enums/book.enum";
+import { BookCategory, BookStatus } from "../libs/enums/book.enum";
 
 const bookSchema = new Schema(
   {
@@ -29,10 +29,26 @@ const bookSchema = new Schema(
       required: true,
     },
 
+    bookStatus: {
+      type: String,
+      enum: BookStatus,
+      default: BookStatus.PROCESS,
+    },
+
     memberId: {
       type: Schema.Types.ObjectId,
       ref: "Member",
       required: true,
+    },
+
+    bookViews: {
+      type: Number,
+      default: 0,
+    },
+
+    bookLikes: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }

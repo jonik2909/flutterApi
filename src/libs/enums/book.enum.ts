@@ -4,3 +4,8 @@ export enum BookCategory {
   HORROR = "HORROR",
   OTHER = "OTHER",
 }
+
+export enum BookStatus {
+  PROCESS = "PROCESS",
+  PAUSE = "PAUSE",
+}

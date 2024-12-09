@@ -1,0 +1,179 @@
+import {
+  LoginInput,
+  MemberInput,
+  MemberInquiry,
+  MemberUpdateInput,
+} from "../libs/types/member";
+import Errors, { HttpCode } from "../libs/Errors";
+import { Message } from "../libs/Errors";
+import {
+  lookupAuthMemberLiked,
+  shapeIntoMongooseObjectId,
+} from "../libs/config";
+import MemberModel from "../schema/Member.model";
+import { Member } from "../libs/types/member";
+import * as bcrypt from "bcryptjs";
+import { MemberStatus } from "../libs/enums/member.enum";
+import { T } from "../libs/types/common";
+import { ObjectId } from "mongoose";
+import { ViewInput } from "../libs/types/view";
+import { ViewGroup } from "../libs/enums/view.enum";
+import ViewService from "./View.service";
+import { LikeInput } from "../libs/types/like";
+import { LikeGroup } from "../libs/enums/like.enum";
+import LikeService from "./Like.service";
+import BookModel from "../schema/Book.model";
+import { BookInput, BookInquiry } from "../libs/types/book";
+import { Book } from "../libs/types/book";
+import { BookStatus } from "../libs/enums/book.enum";
+
+class MemberService {
+  private readonly bookModel;
+  public viewService;
+  public likeService;
+
+  constructor() {
+    this.bookModel = BookModel;
+    this.viewService = new ViewService();
+    this.likeService = new LikeService();
+  }
+
+  public async createBook(input: BookInput): Promise<Book> {
+    try {
+      return await this.bookModel.create(input);
+    } catch (err) {
+      console.error("Error, model:createBook", err);
+      throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
+    }
+  }
+
+  public async getBook(memberId: ObjectId | null, id: string): Promise<Member> {
+    const targetId = shapeIntoMongooseObjectId(id);
+
+    let result = await this.bookModel
+      .findOne({ _id: targetId, book: BookStatus.PROCESS })
+      .lean()
+      .exec();
+    if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+    if (memberId) {
+      // Check Existence
+      const input: ViewInput = {
+        memberId: memberId,
+        viewRefId: targetId,
+        viewGroup: ViewGroup.BOOK,
+      };
+      const existView = await this.viewService.checkViewExistence(input);
+
+      console.log("exist:", !!existView);
+      if (!existView) {
+        // Insert View
+        await this.viewService.insertMemberView(input);
+
+        // Increase Counts
+        result = await this.bookModel
+          .findByIdAndUpdate(
+            targetId,
+            { $inc: { bookViews: +1 } },
+            { new: true }
+          )
+          .lean()
+          .exec();
+      }
+
+      const likeInput = {
+        memberId: memberId,
+        likeRefId: targetId,
+        likeGroup: LikeGroup.MEMBER,
+      };
+      result.meLiked = await this.likeService.checkLikeExistence(likeInput);
+    }
+
+    return result;
+  }
+
+  public async getBooks(
+    member: Member,
+    inquiry: BookInquiry
+  ): Promise<Member[]> {
+    const memberId = shapeIntoMongooseObjectId(member?._id);
+
+    const match: T = { bookStatus: BookStatus.PROCESS };
+
+    if (inquiry.bookCategory) match.memberType = inquiry.bookCategory;
+    if (inquiry.search) {
+      match.bookName = { $regex: new RegExp(inquiry.search, "i") };
+    }
+
+    const sort: T = { [inquiry.order]: -1 };
+
+    console.log(match);
+
+    const result = await this.bookModel
+      .aggregate([
+        { $match: match },
+        { $sort: sort },
+        { $skip: (inquiry.page - 1) * inquiry.limit },
+        { $limit: inquiry.limit },
+        lookupAuthMemberLiked(memberId),
+      ])
+      .exec();
+
+    return result;
+  }
+
+  public async updateMember(
+    member: Member,
+    input: MemberUpdateInput
+  ): Promise<Member> {
+    const memberId = shapeIntoMongooseObjectId(member._id);
+    const result = await this.bookModel
+      .findOneAndUpdate({ _id: memberId }, input, { new: true })
+      .exec();
+    if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+
+    return result;
+  }
+
+  public async likeTargetMember(member: Member, id: string): Promise<Member> {
+    const memberId = shapeIntoMongooseObjectId(member._id);
+    const likeRefId = shapeIntoMongooseObjectId(id);
+
+    const target: Member = await this.bookModel
+      .findOne({ _id: likeRefId, memberStatus: MemberStatus.ACTIVE })
+      .exec();
+    if (!target) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+    const input: LikeInput = {
+      memberId: memberId,
+      likeRefId: likeRefId,
+      likeGroup: LikeGroup.MEMBER,
+    };
+
+    const modifier: number = await this.likeService.toggleLike(input);
+    const result = await this.memberStatsEditor({
+      _id: likeRefId,
+      targetKey: "memberLikes",
+      modifier: modifier,
+    });
+    if (!target)
+      throw new Errors(HttpCode.BAD_REQUEST, Message.SOMETHING_WENT_WRONG);
+
+    return result;
+  }
+
+  public async memberStatsEditor(input: any): Promise<Member> {
+    const { _id, targetKey, modifier } = input;
+    return await this.bookModel
+      .findByIdAndUpdate(
+        _id,
+        {
+          $inc: { [targetKey]: modifier },
+        },
+        { new: true }
+      )
+      .exec();
+  }
+}
+
+export default MemberService;

@@ -1,4 +1,4 @@
-import { BookCategory } from "../enums/book.enum";
+import { BookCategory, BookStatus } from "../enums/book.enum";
 import { ObjectId, Types } from "mongoose";
 
 export interface Book {
@@ -8,6 +8,9 @@ export interface Book {
   bookDesc: string;
   bookImage: string[];
   bookCategory: BookCategory;
+  bookStatus: BookStatus;
+  bookViews: number;
+  bookLikes: number;
   memberId: ObjectId;
 }
 
@@ -25,6 +28,7 @@ export interface BookInput {
   bookDesc: string;
   bookImage: string[];
   bookCategory: BookCategory;
+  bookStatus?: BookStatus;
   memberId: ObjectId;
 }
 
@@ -35,5 +39,8 @@ export interface BookUpdateInput {
   bookDesc?: string;
   bookImage?: string[];
   bookCategory?: BookCategory;
+  bookStatus?: BookStatus;
+  bookViews?: number;
+  bookLikes?: number;
   memberId?: ObjectId;
 }
