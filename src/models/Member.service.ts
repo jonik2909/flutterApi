@@ -1,4 +1,9 @@
-import { LoginInput, MemberInput, MemberInquiry } from "../libs/types/member";
+import {
+  LoginInput,
+  MemberInput,
+  MemberInquiry,
+  MemberUpdateInput,
+} from "../libs/types/member";
 import Errors, { HttpCode } from "../libs/Errors";
 import { Message } from "../libs/Errors";
 import { shapeIntoMongooseObjectId } from "../libs/config";
@@ -123,6 +128,19 @@ class MemberService {
         { $limit: inquiry.limit },
       ])
       .exec();
+
+    return result;
+  }
+
+  public async updateMember(
+    member: Member,
+    input: MemberUpdateInput
+  ): Promise<Member> {
+    const memberId = shapeIntoMongooseObjectId(member._id);
+    const result = await this.memberModel
+      .findOneAndUpdate({ _id: memberId }, input, { new: true })
+      .exec();
+    if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
 
     return result;
   }

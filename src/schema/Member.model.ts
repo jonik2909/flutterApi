@@ -37,6 +37,10 @@ const memberSchema = new Schema(
       type: String,
     },
 
+    memberImage: {
+      type: String,
+    },
+
     memberViews: {
       type: Number,
       default: 0,
