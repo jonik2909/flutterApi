@@ -101,7 +101,7 @@ bookController.getMembers = async (req: ExtendedRequest, res: Response) => {
     }
     if (search) inquiry.search = String(search);
 
-    const result = await memberService.getMembers(inquiry);
+    const result = await memberService.getMembers(req.member, inquiry);
 
     res.status(HttpCode.OK).json(result);
   } catch (err) {

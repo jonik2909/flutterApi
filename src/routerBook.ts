@@ -13,7 +13,11 @@ routerBook.get(
   bookController.logout
 );
 
-routerBook.get("/member/all", bookController.getMembers);
+routerBook.get(
+  "/member/all",
+  bookController.retrieveAuth,
+  bookController.getMembers
+);
 
 routerBook.get(
   "/member/:id",

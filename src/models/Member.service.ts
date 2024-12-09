@@ -6,7 +6,10 @@ import {
 } from "../libs/types/member";
 import Errors, { HttpCode } from "../libs/Errors";
 import { Message } from "../libs/Errors";
-import { shapeIntoMongooseObjectId } from "../libs/config";
+import {
+  lookupAuthMemberLiked,
+  shapeIntoMongooseObjectId,
+} from "../libs/config";
 import MemberModel from "../schema/Member.model";
 import { Member } from "../libs/types/member";
 import * as bcrypt from "bcryptjs";
@@ -129,7 +132,12 @@ class MemberService {
     return result;
   }
 
-  public async getMembers(inquiry: MemberInquiry): Promise<Member[]> {
+  public async getMembers(
+    member: Member,
+    inquiry: MemberInquiry
+  ): Promise<Member[]> {
+    const memberId = shapeIntoMongooseObjectId(member?._id);
+
     const match: T = { memberStatus: MemberStatus.ACTIVE };
 
     if (inquiry.memberType) match.memberType = inquiry.memberType;
@@ -147,6 +155,7 @@ class MemberService {
         { $sort: sort },
         { $skip: (inquiry.page - 1) * inquiry.limit },
         { $limit: inquiry.limit },
+        lookupAuthMemberLiked(memberId),
       ])
       .exec();
 
