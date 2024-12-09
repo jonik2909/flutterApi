@@ -16,14 +16,19 @@ import { ObjectId } from "mongoose";
 import { ViewInput } from "../libs/types/view";
 import { ViewGroup } from "../libs/enums/view.enum";
 import ViewService from "./View.service";
+import { LikeInput } from "../libs/types/like";
+import { LikeGroup } from "../libs/enums/like.enum";
+import LikeService from "./Like.service";
 
 class MemberService {
   private readonly memberModel;
   public viewService;
+  public likeService;
 
   constructor() {
     this.memberModel = MemberModel;
     this.viewService = new ViewService();
+    this.likeService = new LikeService();
   }
 
   public async signup(input: MemberInput): Promise<Member> {
@@ -143,6 +148,46 @@ class MemberService {
     if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
 
     return result;
+  }
+
+  public async likeTargetMember(member: Member, id: string): Promise<Member> {
+    const memberId = shapeIntoMongooseObjectId(member._id);
+    const likeRefId = shapeIntoMongooseObjectId(id);
+
+    const target: Member = await this.memberModel
+      .findOne({ _id: likeRefId, memberStatus: MemberStatus.ACTIVE })
+      .exec();
+    if (!target) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+    const input: LikeInput = {
+      memberId: memberId,
+      likeRefId: likeRefId,
+      likeGroup: LikeGroup.MEMBER,
+    };
+
+    const modifier: number = await this.likeService.toggleLike(input);
+    const result = await this.memberStatsEditor({
+      _id: likeRefId,
+      targetKey: "memberLikes",
+      modifier: modifier,
+    });
+    if (!target)
+      throw new Errors(HttpCode.BAD_REQUEST, Message.SOMETHING_WENT_WRONG);
+
+    return result;
+  }
+
+  public async memberStatsEditor(input: any): Promise<Member> {
+    const { _id, targetKey, modifier } = input;
+    return await this.memberModel
+      .findByIdAndUpdate(
+        _id,
+        {
+          $inc: { [targetKey]: modifier },
+        },
+        { new: true }
+      )
+      .exec();
   }
 }
 

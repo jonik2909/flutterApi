@@ -28,4 +28,10 @@ routerBook.post(
   bookController.updateMember
 );
 
+routerBook.post(
+  "/member/like",
+  bookController.verifyAuth,
+  bookController.likeTargetMember
+);
+
 export default routerBook;
