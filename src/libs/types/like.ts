@@ -6,3 +6,9 @@ export interface LikeInput {
   likeRefId: ObjectId;
   likeGroup: LikeGroup;
 }
+
+export interface meLiked {
+  memberId: ObjectId;
+  likeRefId: ObjectId;
+  myFavorite: boolean;
+}

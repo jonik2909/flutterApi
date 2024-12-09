@@ -1,8 +1,7 @@
 import LikeModel from "../schema/Like.model";
 import Errors, { HttpCode, Message } from "../libs/Errors";
-import { View, ViewInput } from "../libs/types/view";
 import ViewModel from "../schema/View.model";
-import { LikeInput } from "../libs/types/like";
+import { LikeInput, meLiked } from "../libs/types/like";
 import { T } from "../libs/types/common";
 
 class LikeService {
@@ -33,11 +32,15 @@ class LikeService {
     return modifier;
   }
 
-  // public async checkLikeExistence(input: LikeInput): Promise<MeLiked[]> {
-  // 	const { memberId, likeRefId } = input;
-  // 	const result = await this.likeModel.findOne({ memberId: memberId, likeRefId: likeRefId }).exec();
-  // 	return result ? [{ memberId: memberId, likeRefId: likeRefId, myFavorite: true }] : [];
-  // }
+  public async checkLikeExistence(input: LikeInput): Promise<meLiked[]> {
+    const { memberId, likeRefId } = input;
+    const result = await this.likeModel
+      .findOne({ memberId: memberId, likeRefId: likeRefId })
+      .exec();
+    return result
+      ? [{ memberId: memberId, likeRefId: likeRefId, myFavorite: true }]
+      : [];
+  }
 }
 
 export default LikeService;

@@ -1,7 +1,7 @@
 import { ObjectId, Types } from "mongoose";
 import { MemberStatus, MemberType } from "../enums/member.enum";
 import { Request } from "express";
-import { Session } from "express-session";
+import { meLiked } from "./like";
 
 export interface Member {
   _id: ObjectId;
@@ -16,6 +16,7 @@ export interface Member {
   memberLikes: number;
   createdAt: Date;
   updatedAt: Date;
+  meLiked?: meLiked[];
 }
 
 export interface MemberInquiry {
