@@ -7,12 +7,18 @@ import { Member } from "../libs/types/member";
 import * as bcrypt from "bcryptjs";
 import { MemberStatus } from "../libs/enums/member.enum";
 import { T } from "../libs/types/common";
+import { ObjectId } from "mongoose";
+import { ViewInput } from "../libs/types/view";
+import { ViewGroup } from "../libs/enums/view.enum";
+import ViewService from "./View.service";
 
 class MemberService {
   private readonly memberModel;
+  public viewService;
 
   constructor() {
     this.memberModel = MemberModel;
+    this.viewService = new ViewService();
   }
 
   public async signup(input: MemberInput): Promise<Member> {
@@ -58,13 +64,41 @@ class MemberService {
     return await this.memberModel.findById(member._id).lean().exec();
   }
 
-  public async getMember(member: Member, targetId: string): Promise<Member> {
-    const memberId = shapeIntoMongooseObjectId(member?._id);
-    targetId = shapeIntoMongooseObjectId(targetId);
-    const result = await this.memberModel
+  public async getMember(
+    memberId: ObjectId | null,
+    id: string
+  ): Promise<Member> {
+    const targetId = shapeIntoMongooseObjectId(id);
+
+    let result = await this.memberModel
       .findOne({ _id: targetId, memberStatus: MemberStatus.ACTIVE })
       .exec();
     if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+    if (memberId) {
+      // Check Existence
+      const input: ViewInput = {
+        memberId: memberId,
+        viewRefId: targetId,
+        viewGroup: ViewGroup.MEMBER,
+      };
+      const existView = await this.viewService.checkViewExistence(input);
+
+      console.log("exist:", !!existView);
+      if (!existView) {
+        // Insert View
+        await this.viewService.insertMemberView(input);
+
+        // Increase Counts
+        result = await this.memberModel
+          .findByIdAndUpdate(
+            targetId,
+            { $inc: { memberViews: +1 } },
+            { new: true }
+          )
+          .exec();
+      }
+    }
 
     return result;
   }

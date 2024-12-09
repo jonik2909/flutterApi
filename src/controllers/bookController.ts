@@ -73,7 +73,10 @@ bookController.getMember = async (req: ExtendedRequest, res: Response) => {
   try {
     console.log("getMember");
     const targetId = req.params.id;
-    const result = await memberService.getMember(req.member, targetId);
+    const result = await memberService.getMember(
+      req.member?._id ?? null,
+      targetId
+    );
 
     res.status(HttpCode.OK).json(result);
   } catch (err) {
