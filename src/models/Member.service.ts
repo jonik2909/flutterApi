@@ -82,6 +82,7 @@ class MemberService {
 
     let result = await this.memberModel
       .findOne({ _id: targetId, memberStatus: MemberStatus.ACTIVE })
+      .lean()
       .exec();
     if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
@@ -106,8 +107,23 @@ class MemberService {
             { $inc: { memberViews: +1 } },
             { new: true }
           )
+          .lean()
           .exec();
       }
+
+      const likeInput = {
+        memberId: memberId,
+        likeRefId: targetId,
+        likeGroup: LikeGroup.MEMBER,
+      };
+      result.meLiked = await this.likeService.checkLikeExistence(likeInput);
+
+      console.log("result:", result);
+
+      console.log(
+        "liked:",
+        await this.likeService.checkLikeExistence(likeInput)
+      );
     }
 
     return result;
