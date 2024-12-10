@@ -49,10 +49,7 @@ bookController.login = async (req: Request, res: Response) => {
       result = await memberService.login(input),
       token = await authService.createToken(result);
 
-    res.cookie("accessToken", token, {
-      maxAge: AUTH_TIMER * 3600 * 1000,
-      httpOnly: false,
-    });
+    res.set("Authorization", `Bearer ${token}`);
 
     res.status(HttpCode.OK).json({ member: result, accessToken: token });
   } catch (err) {
@@ -121,8 +118,14 @@ bookController.verifyAuth = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.cookies["accessToken"];
-    if (token) req.member = await authService.checkAuth(token);
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    req.member = await authService.checkAuth(token);
     if (!req.member)
       throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
 
@@ -140,7 +143,14 @@ bookController.retrieveAuth = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.cookies["accessToken"];
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+    }
+
+    let token: any = authHeader.split(" ")[1];
+
+    token = await authService.checkAuth(token);
     if (token) req.member = await authService.checkAuth(token);
 
     next();
@@ -156,10 +166,17 @@ bookController.verifyAuthor = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.cookies["accessToken"];
-    if (token) req.member = await authService.checkAuth(token);
-    if (!req.member)
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    req.member = await authService.checkAuth(token);
+    if (!req.member) {
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+    }
 
     if (req.member.memberType !== MemberType.AUTHOR)
       throw new Errors(
