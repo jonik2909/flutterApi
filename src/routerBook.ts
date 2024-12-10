@@ -51,4 +51,10 @@ routerBook.post(
   bookController.createBook
 );
 
+routerBook.get(
+  "/book/all",
+  bookController.retrieveAuth,
+  bookController.getBooks
+);
+
 export default routerBook;

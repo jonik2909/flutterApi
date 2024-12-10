@@ -88,7 +88,7 @@ class BookService {
 
     const match: T = { bookStatus: BookStatus.PROCESS };
 
-    if (inquiry.bookCategory) match.memberType = inquiry.bookCategory;
+    if (inquiry.bookCategory) match.bookCategory = inquiry.bookCategory;
     if (inquiry.search) {
       match.bookName = { $regex: new RegExp(inquiry.search, "i") };
     }

@@ -13,8 +13,9 @@ import MemberService from "../models/Member.service";
 import AuthService from "../models/Auth.service";
 import { AUTH_TIMER } from "../libs/config";
 import { MemberType } from "../libs/enums/member.enum";
-import { BookInput } from "../libs/types/book";
+import { BookInput, BookInquiry } from "../libs/types/book";
 import BookService from "../models/Book.service";
+import { BookCategory } from "../libs/enums/book.enum";
 
 const bookController: T = {};
 const memberService = new MemberService();
@@ -232,6 +233,30 @@ bookController.createBook = async (req: ExtendedRequest, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error, createBook:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+bookController.getBooks = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("getBooks");
+    const { page, limit, order, bookCategory, search } = req.query;
+    const inquiry: BookInquiry = {
+      order: String(order),
+      page: Number(page),
+      limit: Number(limit),
+    };
+    if (bookCategory) {
+      inquiry.bookCategory = bookCategory as BookCategory;
+    }
+    if (search) inquiry.search = String(search);
+
+    const result = await bookService.getBooks(req.member, inquiry);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, getBooks:", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }
