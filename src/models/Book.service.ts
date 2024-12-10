@@ -103,6 +103,15 @@ class BookService {
         { $sort: sort },
         { $skip: (inquiry.page - 1) * inquiry.limit },
         { $limit: inquiry.limit },
+        {
+          $lookup: {
+            from: "members",
+            localField: "memberId",
+            foreignField: "_id",
+            as: "authorData",
+          },
+        },
+        { $unwind: "$authorData" },
         lookupAuthMemberLiked(memberId),
       ])
       .exec();

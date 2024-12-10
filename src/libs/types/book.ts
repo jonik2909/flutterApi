@@ -1,5 +1,7 @@
 import { BookCategory, BookStatus } from "../enums/book.enum";
 import { ObjectId, Types } from "mongoose";
+import { meLiked } from "./like";
+import { Member } from "./member";
 
 export interface Book {
   _id: ObjectId;
@@ -12,6 +14,8 @@ export interface Book {
   bookViews: number;
   bookLikes: number;
   memberId: ObjectId;
+  meLiked?: meLiked[];
+  authorData?: Member;
 }
 
 export interface BookInquiry {
