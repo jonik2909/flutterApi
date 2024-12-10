@@ -13,7 +13,7 @@ import MemberService from "../models/Member.service";
 import AuthService from "../models/Auth.service";
 import { AUTH_TIMER } from "../libs/config";
 import { MemberType } from "../libs/enums/member.enum";
-import { BookInput, BookInquiry } from "../libs/types/book";
+import { BookInput, BookInquiry, BookUpdateInput } from "../libs/types/book";
 import BookService from "../models/Book.service";
 import { BookCategory } from "../libs/enums/book.enum";
 
@@ -271,6 +271,24 @@ bookController.getBook = async (req: ExtendedRequest, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error, getBook:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+bookController.updateBook = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("updateBook");
+    const input: BookUpdateInput = req.body;
+    if (req.files?.length > 0)
+      input.bookImages = req.files?.map((ele) => {
+        return ele.path.replace(/\\/g, "/");
+      });
+    const result = await bookService.updateBook(req.member, input);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, updateBook:", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }

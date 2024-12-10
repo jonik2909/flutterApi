@@ -63,4 +63,11 @@ routerBook.get(
   bookController.getBook
 );
 
+routerBook.post(
+  "/book/update",
+  bookController.verifyAuthor,
+  uploader("books").array("bookImages", 5),
+  bookController.updateBook
+);
+
 export default routerBook;
