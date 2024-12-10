@@ -18,7 +18,7 @@ const bookSchema = new Schema(
       required: true,
     },
 
-    bookImage: {
+    bookImages: {
       type: [String],
       required: true,
     },

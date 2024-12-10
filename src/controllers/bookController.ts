@@ -13,10 +13,13 @@ import MemberService from "../models/Member.service";
 import AuthService from "../models/Auth.service";
 import { AUTH_TIMER } from "../libs/config";
 import { MemberType } from "../libs/enums/member.enum";
+import { BookInput } from "../libs/types/book";
+import BookService from "../models/Book.service";
 
 const bookController: T = {};
 const memberService = new MemberService();
 const authService = new AuthService();
+const bookService = new BookService();
 
 bookController.signup = async (req: Request, res: Response) => {
   try {
@@ -146,6 +149,31 @@ bookController.retrieveAuth = async (
   }
 };
 
+bookController.verifyAuthor = async (
+  req: ExtendedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.cookies["accessToken"];
+    if (token) req.member = await authService.checkAuth(token);
+    if (!req.member)
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+
+    if (req.member.memberType !== MemberType.AUTHOR)
+      throw new Errors(
+        HttpCode.UNAUTHORIZED,
+        Message.ONLY_SPECIFIC_ROLES_ALLOWED
+      );
+
+    next();
+  } catch (err) {
+    console.log("Error, verifyAuth:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
 bookController.updateMember = async (req: ExtendedRequest, res: Response) => {
   try {
     console.log("updateMember");
@@ -174,6 +202,36 @@ bookController.likeTargetMember = async (
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error, likeTargetMember:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+// ********************
+
+bookController.createBook = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("createBook");
+    if (!req.files?.length)
+      throw new Errors(
+        HttpCode.INTERNAL_SERVER_ERROR,
+        Message.SOMETHING_WENT_WRONG
+      );
+
+    const data: BookInput = req.body;
+    data.bookImages = req.files?.map((ele) => {
+      return ele.path.replace(/\\/g, "/");
+    });
+
+    data.memberId = req.member._id;
+
+    console.log();
+
+    const result = await bookService.createBook(data);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, createBook:", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }

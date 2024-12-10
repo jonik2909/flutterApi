@@ -21,6 +21,7 @@ export enum Message {
   BLOCKED_USER = "You have been blocked, contact the restaurant!",
   WRONG_PASSWORD = "Wrong password, please try again!",
   NOT_AUTHENTICATED = "You are not authenticated, Please login first!",
+  ONLY_SPECIFIC_ROLES_ALLOWED = "You do not have the required role to perform this action.",
 }
 
 class Errors extends Error {

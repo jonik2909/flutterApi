@@ -1,19 +1,10 @@
-import {
-  LoginInput,
-  MemberInput,
-  MemberInquiry,
-  MemberUpdateInput,
-} from "../libs/types/member";
 import Errors, { HttpCode } from "../libs/Errors";
 import { Message } from "../libs/Errors";
 import {
   lookupAuthMemberLiked,
   shapeIntoMongooseObjectId,
 } from "../libs/config";
-import MemberModel from "../schema/Member.model";
 import { Member } from "../libs/types/member";
-import * as bcrypt from "bcryptjs";
-import { MemberStatus } from "../libs/enums/member.enum";
 import { T } from "../libs/types/common";
 import { ObjectId } from "mongoose";
 import { ViewInput } from "../libs/types/view";
@@ -23,11 +14,11 @@ import { LikeInput } from "../libs/types/like";
 import { LikeGroup } from "../libs/enums/like.enum";
 import LikeService from "./Like.service";
 import BookModel from "../schema/Book.model";
-import { BookInput, BookInquiry } from "../libs/types/book";
+import { BookInput, BookInquiry, BookUpdateInput } from "../libs/types/book";
 import { Book } from "../libs/types/book";
 import { BookStatus } from "../libs/enums/book.enum";
 
-class MemberService {
+class BookService {
   private readonly bookModel;
   public viewService;
   public likeService;
@@ -47,7 +38,7 @@ class MemberService {
     }
   }
 
-  public async getBook(memberId: ObjectId | null, id: string): Promise<Member> {
+  public async getBook(memberId: ObjectId | null, id: string): Promise<Book> {
     const targetId = shapeIntoMongooseObjectId(id);
 
     let result = await this.bookModel
@@ -92,10 +83,7 @@ class MemberService {
     return result;
   }
 
-  public async getBooks(
-    member: Member,
-    inquiry: BookInquiry
-  ): Promise<Member[]> {
+  public async getBooks(member: Member, inquiry: BookInquiry): Promise<Book[]> {
     const memberId = shapeIntoMongooseObjectId(member?._id);
 
     const match: T = { bookStatus: BookStatus.PROCESS };
@@ -122,38 +110,40 @@ class MemberService {
     return result;
   }
 
-  public async updateMember(
+  public async updateBook(
     member: Member,
-    input: MemberUpdateInput
-  ): Promise<Member> {
+    input: BookUpdateInput
+  ): Promise<Book> {
     const memberId = shapeIntoMongooseObjectId(member._id);
     const result = await this.bookModel
-      .findOneAndUpdate({ _id: memberId }, input, { new: true })
+      .findOneAndUpdate({ _id: input._id, memberId: memberId }, input, {
+        new: true,
+      })
       .exec();
     if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
 
     return result;
   }
 
-  public async likeTargetMember(member: Member, id: string): Promise<Member> {
+  public async likeTargetBook(member: Member, id: string): Promise<Book> {
     const memberId = shapeIntoMongooseObjectId(member._id);
     const likeRefId = shapeIntoMongooseObjectId(id);
 
-    const target: Member = await this.bookModel
-      .findOne({ _id: likeRefId, memberStatus: MemberStatus.ACTIVE })
+    const target: Book = await this.bookModel
+      .findOne({ _id: likeRefId, bookStatus: BookStatus.PROCESS })
       .exec();
     if (!target) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
     const input: LikeInput = {
       memberId: memberId,
       likeRefId: likeRefId,
-      likeGroup: LikeGroup.MEMBER,
+      likeGroup: LikeGroup.BOOK,
     };
 
     const modifier: number = await this.likeService.toggleLike(input);
-    const result = await this.memberStatsEditor({
+    const result = await this.bookStatsEditor({
       _id: likeRefId,
-      targetKey: "memberLikes",
+      targetKey: "bookViews",
       modifier: modifier,
     });
     if (!target)
@@ -162,7 +152,7 @@ class MemberService {
     return result;
   }
 
-  public async memberStatsEditor(input: any): Promise<Member> {
+  public async bookStatsEditor(input: any): Promise<Book> {
     const { _id, targetKey, modifier } = input;
     return await this.bookModel
       .findByIdAndUpdate(
@@ -176,4 +166,4 @@ class MemberService {
   }
 }
 
-export default MemberService;
+export default BookService;

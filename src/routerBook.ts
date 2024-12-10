@@ -44,4 +44,11 @@ routerBook.post(
  *                                             *
  ***********************************************/
 
+routerBook.post(
+  "/book/create",
+  bookController.verifyAuthor,
+  uploader("books").array("bookImages", 5),
+  bookController.createBook
+);
+
 export default routerBook;

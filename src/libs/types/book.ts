@@ -6,7 +6,7 @@ export interface Book {
   bookName: string;
   bookPrice: number;
   bookDesc: string;
-  bookImage: string[];
+  bookImages: string[];
   bookCategory: BookCategory;
   bookStatus: BookStatus;
   bookViews: number;
@@ -26,7 +26,7 @@ export interface BookInput {
   bookName: string;
   bookPrice: number;
   bookDesc: string;
-  bookImage: string[];
+  bookImages: string[];
   bookCategory: BookCategory;
   bookStatus?: BookStatus;
   memberId: ObjectId;
@@ -37,7 +37,7 @@ export interface BookUpdateInput {
   bookName?: string;
   bookPrice?: number;
   bookDesc?: string;
-  bookImage?: string[];
+  bookImages?: string[];
   bookCategory?: BookCategory;
   bookStatus?: BookStatus;
   bookViews?: number;
