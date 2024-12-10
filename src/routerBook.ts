@@ -57,4 +57,10 @@ routerBook.get(
   bookController.getBooks
 );
 
+routerBook.get(
+  "/book/:id",
+  bookController.retrieveAuth,
+  bookController.getBook
+);
+
 export default routerBook;

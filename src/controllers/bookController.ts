@@ -262,4 +262,18 @@ bookController.getBooks = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+bookController.getBook = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("getBook");
+    const targetId = req.params.id;
+    const result = await bookService.getBook(req.member?._id ?? null, targetId);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, getBook:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
 export default bookController;
