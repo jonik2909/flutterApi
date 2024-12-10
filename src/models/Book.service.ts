@@ -17,16 +17,19 @@ import BookModel from "../schema/Book.model";
 import { BookInput, BookInquiry, BookUpdateInput } from "../libs/types/book";
 import { Book } from "../libs/types/book";
 import { BookStatus } from "../libs/enums/book.enum";
+import MemberService from "./Member.service";
 
 class BookService {
   private readonly bookModel;
   public viewService;
   public likeService;
+  public memberService;
 
   constructor() {
     this.bookModel = BookModel;
     this.viewService = new ViewService();
     this.likeService = new LikeService();
+    this.memberService = new MemberService();
   }
 
   public async createBook(input: BookInput): Promise<Book> {
@@ -78,6 +81,10 @@ class BookService {
         likeGroup: LikeGroup.MEMBER,
       };
       result.meLiked = await this.likeService.checkLikeExistence(likeInput);
+      result.authorData = await this.memberService.getMember(
+        null,
+        result.memberId
+      );
     }
 
     return result;
