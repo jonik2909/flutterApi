@@ -294,6 +294,21 @@ bookController.updateBook = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+bookController.deleteBook = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("deleteBook");
+    const input: string = req.body._id;
+
+    const result = await bookService.deleteBook(req.member, input);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, deleteBook:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
 bookController.likeTargetBook = async (req: ExtendedRequest, res: Response) => {
   try {
     console.log("likeTargetBook");

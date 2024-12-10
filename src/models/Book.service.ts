@@ -141,6 +141,22 @@ class BookService {
     return result;
   }
 
+  public async deleteBook(member: Member, bookId: string): Promise<Book> {
+    const memberId = shapeIntoMongooseObjectId(member._id);
+    bookId = shapeIntoMongooseObjectId(bookId);
+    const result = await this.bookModel
+      .findOneAndDelete(
+        { _id: bookId, memberId: memberId },
+        {
+          new: true,
+        }
+      )
+      .exec();
+    if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.DELETE_FAILED);
+
+    return result;
+  }
+
   public async likeTargetBook(member: Member, id: string): Promise<Book> {
     const memberId = shapeIntoMongooseObjectId(member._id);
     const likeRefId = shapeIntoMongooseObjectId(id);

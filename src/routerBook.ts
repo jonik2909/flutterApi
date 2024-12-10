@@ -71,6 +71,12 @@ routerBook.post(
 );
 
 routerBook.post(
+  "/book/delete",
+  bookController.verifyAuthor,
+  bookController.deleteBook
+);
+
+routerBook.post(
   "/book/like",
   bookController.verifyAuth,
   bookController.likeTargetBook
