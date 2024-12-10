@@ -143,7 +143,7 @@ class BookService {
     const modifier: number = await this.likeService.toggleLike(input);
     const result = await this.bookStatsEditor({
       _id: likeRefId,
-      targetKey: "bookViews",
+      targetKey: "bookLikes",
       modifier: modifier,
     });
     if (!target)

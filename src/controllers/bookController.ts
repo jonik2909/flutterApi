@@ -294,4 +294,19 @@ bookController.updateBook = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+bookController.likeTargetBook = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("likeTargetBook");
+    const { id } = req.body;
+
+    const result = await bookService.likeTargetBook(req.member, id);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, likeTargetBook:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
 export default bookController;

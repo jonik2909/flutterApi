@@ -70,4 +70,10 @@ routerBook.post(
   bookController.updateBook
 );
 
+routerBook.post(
+  "/book/like",
+  bookController.verifyAuth,
+  bookController.likeTargetBook
+);
+
 export default routerBook;
