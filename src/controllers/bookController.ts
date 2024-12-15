@@ -24,15 +24,12 @@ const bookService = new BookService();
 
 bookController.signup = async (req: Request, res: Response) => {
   try {
-    console.log("signup");
+    console.log("signup", req.body);
     const input: MemberInput = req.body,
       result: Member = await memberService.signup(input),
       token = await authService.createToken(result);
 
-    res.cookie("accessToken", token, {
-      maxAge: AUTH_TIMER * 3600 * 1000,
-      httpOnly: false,
-    });
+    res.set("Authorization", `Bearer ${token}`);
 
     res.status(HttpCode.CREATED).json({ member: result, accessToken: token });
   } catch (err) {
