@@ -16,6 +16,7 @@ import { MemberType } from "../libs/enums/member.enum";
 import { BookInput, BookInquiry, BookUpdateInput } from "../libs/types/book";
 import BookService from "../models/Book.service";
 import { BookCategory } from "../libs/enums/book.enum";
+import { log } from "console";
 
 const bookController: T = {};
 const memberService = new MemberService();
@@ -141,18 +142,18 @@ bookController.retrieveAuth = async (
 ) => {
   try {
     const authHeader = req.headers.authorization;
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
     }
 
     let token: any = authHeader.split(" ")[1];
-
-    token = await authService.checkAuth(token);
-    if (token) req.member = await authService.checkAuth(token);
+    token = await authService.checkAuth(String(token));
+    if (token) req.member = token;
 
     next();
-  } catch (err) {
-    console.log("Error, retrieveAuth:", err);
+  } catch (err: any) {
+    console.log("Error, retrieveAuth:", err?.message);
     next();
   }
 };

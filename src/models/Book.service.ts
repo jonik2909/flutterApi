@@ -81,11 +81,12 @@ class BookService {
         likeGroup: LikeGroup.MEMBER,
       };
       result.meLiked = await this.likeService.checkLikeExistence(likeInput);
-      result.authorData = await this.memberService.getMember(
-        null,
-        result.memberId
-      );
     }
+
+    result.authorData = await this.memberService.getMember(
+      null,
+      result.memberId
+    );
 
     return result;
   }
