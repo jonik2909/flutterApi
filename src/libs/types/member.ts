@@ -2,6 +2,7 @@ import { ObjectId, Types } from "mongoose";
 import { MemberStatus, MemberType } from "../enums/member.enum";
 import { Request } from "express";
 import { meLiked } from "./like";
+import { Book } from "./book";
 
 export interface Member {
   _id: ObjectId;
@@ -17,6 +18,7 @@ export interface Member {
   createdAt: Date;
   updatedAt: Date;
   meLiked?: meLiked[];
+  bookData?: Book[];
 }
 
 export interface MemberInquiry {

@@ -270,8 +270,6 @@ bookController.getBooks = async (req: ExtendedRequest, res: Response) => {
 
     const result = await bookService.getBooks(req.member, inquiry);
 
-    console.log(result);
-
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error, getBooks:", err);

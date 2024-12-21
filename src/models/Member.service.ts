@@ -22,14 +22,19 @@ import ViewService from "./View.service";
 import { LikeInput } from "../libs/types/like";
 import { LikeGroup } from "../libs/enums/like.enum";
 import LikeService from "./Like.service";
+import BookModel from "../schema/Book.model";
+import { Book } from "../libs/types/book";
+import { BookStatus } from "../libs/enums/book.enum";
 
 class MemberService {
   private readonly memberModel;
+  private readonly bookModel;
   public viewService;
   public likeService;
 
   constructor() {
     this.memberModel = MemberModel;
+    this.bookModel = BookModel;
     this.viewService = new ViewService();
     this.likeService = new LikeService();
   }
@@ -120,14 +125,9 @@ class MemberService {
         likeGroup: LikeGroup.MEMBER,
       };
       result.meLiked = await this.likeService.checkLikeExistence(likeInput);
-
-      console.log("result:", result);
-
-      console.log(
-        "liked:",
-        await this.likeService.checkLikeExistence(likeInput)
-      );
     }
+
+    result.bookData = await this.getAuthorBook(targetId);
 
     return result;
   }
@@ -213,6 +213,16 @@ class MemberService {
         { new: true }
       )
       .exec();
+  }
+
+  public async getAuthorBook(memberId: ObjectId): Promise<Book[]> {
+    memberId = shapeIntoMongooseObjectId(memberId);
+
+    let result = await this.bookModel
+      .find({ memberId: memberId, book: BookStatus.PROCESS })
+      .exec();
+
+    return result;
   }
 }
 
