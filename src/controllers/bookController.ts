@@ -96,7 +96,8 @@ bookController.getMembers = async (req: ExtendedRequest, res: Response) => {
       limit: Number(limit),
     };
     if (memberType) {
-      inquiry.memberType = memberType as MemberType;
+      if (memberType !== MemberType.ADMIN)
+        inquiry.memberType = memberType as MemberType;
     }
     if (search) inquiry.search = String(search);
 
@@ -268,6 +269,8 @@ bookController.getBooks = async (req: ExtendedRequest, res: Response) => {
     if (search) inquiry.search = String(search);
 
     const result = await bookService.getBooks(req.member, inquiry);
+
+    console.log(result);
 
     res.status(HttpCode.OK).json(result);
   } catch (err) {
