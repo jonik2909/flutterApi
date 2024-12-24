@@ -127,6 +127,12 @@ class BookService {
     return result;
   }
 
+  public async getMyBooks(member: Member): Promise<Book[]> {
+    const memberId = shapeIntoMongooseObjectId(member?._id);
+
+    return await this.bookModel.find({ memberId: memberId }).exec();
+  }
+
   public async updateBook(
     member: Member,
     input: BookUpdateInput

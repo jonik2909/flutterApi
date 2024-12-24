@@ -58,6 +58,12 @@ routerBook.get(
 );
 
 routerBook.get(
+  "/book/my",
+  bookController.verifyAuthor,
+  bookController.getMyBooks
+);
+
+routerBook.get(
   "/book/:id",
   bookController.retrieveAuth,
   bookController.getBook
