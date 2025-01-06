@@ -13,7 +13,7 @@ import {
 import MemberModel from "../schema/Member.model";
 import { Member } from "../libs/types/member";
 import * as bcrypt from "bcryptjs";
-import { MemberStatus } from "../libs/enums/member.enum";
+import { MemberStatus, MemberType } from "../libs/enums/member.enum";
 import { T } from "../libs/types/common";
 import { ObjectId } from "mongoose";
 import { ViewInput } from "../libs/types/view";
@@ -221,6 +221,33 @@ class MemberService {
     let result = await this.bookModel
       .find({ memberId: memberId, book: BookStatus.PROCESS })
       .exec();
+
+    return result;
+  }
+
+  /** ADMIN API */
+  public async getAllMembers(): Promise<Member[]> {
+    const result = await this.memberModel
+      .find({
+        memberType: { $ne: MemberType.ADMIN },
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return result;
+  }
+
+  public async removeMember(memberId: string): Promise<Member> {
+    memberId = shapeIntoMongooseObjectId(memberId);
+    const result = await this.memberModel
+      .findOneAndDelete(
+        { _id: memberId },
+        {
+          new: true,
+        }
+      )
+      .exec();
+    if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.DELETE_FAILED);
 
     return result;
   }

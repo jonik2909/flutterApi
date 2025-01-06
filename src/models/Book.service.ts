@@ -203,6 +203,28 @@ class BookService {
       )
       .exec();
   }
+
+  /** ADMIN API */
+  public async getAllBooks(): Promise<Book[]> {
+    const result = await this.bookModel.find().sort({ createdAt: -1 }).exec();
+
+    return result;
+  }
+
+  public async removeBook(bookId: string): Promise<Book> {
+    bookId = shapeIntoMongooseObjectId(bookId);
+    const result = await this.bookModel
+      .findOneAndDelete(
+        { _id: bookId },
+        {
+          new: true,
+        }
+      )
+      .exec();
+    if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.DELETE_FAILED);
+
+    return result;
+  }
 }
 
 export default BookService;

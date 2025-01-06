@@ -191,6 +191,38 @@ bookController.verifyAuthor = async (
   }
 };
 
+bookController.verifyAdmin = async (
+  req: ExtendedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    req.member = await authService.checkAuth(token);
+    if (!req.member) {
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+    }
+
+    if (req.member.memberType !== MemberType.ADMIN)
+      throw new Errors(
+        HttpCode.UNAUTHORIZED,
+        Message.ONLY_SPECIFIC_ROLES_ALLOWED
+      );
+
+    next();
+  } catch (err) {
+    console.log("Error, verifyAdmin:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
 bookController.updateMember = async (req: ExtendedRequest, res: Response) => {
   try {
     console.log("updateMember");
@@ -349,6 +381,65 @@ bookController.likeTargetBook = async (req: ExtendedRequest, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error, likeTargetBook:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+/** ADMIN API */
+bookController.getAllMembers = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("getAllMembers");
+
+    const result = await memberService.getAllMembers();
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, getAllMembers:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+bookController.removeMember = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("removeMember");
+    const input: string = req.body._id;
+
+    const result = await memberService.removeMember(input);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, removeMember:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+bookController.getAllBooks = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("getAllBooks");
+
+    const result = await bookService.getAllBooks();
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, getAllBooks:", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standard.code).json(Errors.standard);
+  }
+};
+
+bookController.removeBook = async (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("removeBook");
+    const input: string = req.body._id;
+
+    const result = await bookService.removeBook(input);
+
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error, removeBook:", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standard.code).json(Errors.standard);
   }

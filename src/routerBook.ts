@@ -88,4 +88,34 @@ routerBook.post(
   bookController.likeTargetBook
 );
 
+/***********************************************
+ *                                             *
+ *               ADMIN API                     *
+ *                                             *
+ ***********************************************/
+
+routerBook.get(
+  "/admin/member/all",
+  bookController.verifyAdmin,
+  bookController.getAllMembers
+);
+
+routerBook.post(
+  "/admin/member/delete",
+  bookController.verifyAdmin,
+  bookController.removeMember
+);
+
+routerBook.get(
+  "/admin/book/all",
+  bookController.verifyAdmin,
+  bookController.getAllBooks
+);
+
+routerBook.post(
+  "/admin/book/delete",
+  bookController.verifyAdmin,
+  bookController.removeBook
+);
+
 export default routerBook;
