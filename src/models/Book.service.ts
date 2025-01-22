@@ -252,6 +252,17 @@ class BookService {
       .exec();
     if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.DELETE_FAILED);
 
+    if (result.bookImages && result.bookImages.length > 0) {
+      const currentImages = result.bookImages || [];
+
+      for (const oldImage of currentImages) {
+        const oldImagePath = path.resolve(oldImage);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+    }
+
     return result;
   }
 }
