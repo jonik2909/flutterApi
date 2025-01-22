@@ -25,6 +25,8 @@ import LikeService from "./Like.service";
 import BookModel from "../schema/Book.model";
 import { Book } from "../libs/types/book";
 import { BookStatus } from "../libs/enums/book.enum";
+import path from "path";
+import fs from "fs";
 
 class MemberService {
   private readonly memberModel;
@@ -167,6 +169,16 @@ class MemberService {
     input: MemberUpdateInput
   ): Promise<Member> {
     const memberId = shapeIntoMongooseObjectId(member._id);
+
+    if (input.memberImage && member.memberImage) {
+      const oldImagePath = path.resolve(member.memberImage);
+
+      // Delete the old image file if it exists
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
     const result = await this.memberModel
       .findOneAndUpdate({ _id: memberId }, input, { new: true })
       .exec();
