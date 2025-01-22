@@ -18,6 +18,8 @@ import { BookInput, BookInquiry, BookUpdateInput } from "../libs/types/book";
 import { Book } from "../libs/types/book";
 import { BookStatus } from "../libs/enums/book.enum";
 import MemberService from "./Member.service";
+import path from "path";
+import fs from "fs";
 
 class BookService {
   private readonly bookModel;
@@ -138,12 +140,28 @@ class BookService {
     input: BookUpdateInput
   ): Promise<Book> {
     const memberId = shapeIntoMongooseObjectId(member._id);
+
+    const oldBook = await this.bookModel
+      .findOne({ _id: input._id, memberId: memberId })
+      .exec();
+
     const result = await this.bookModel
       .findOneAndUpdate({ _id: input._id, memberId: memberId }, input, {
         new: true,
       })
       .exec();
     if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+
+    if (input.bookImages && input.bookImages.length > 0) {
+      const currentImages = oldBook.bookImages || [];
+
+      for (const oldImage of currentImages) {
+        const oldImagePath = path.resolve(oldImage);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+    }
 
     return result;
   }
