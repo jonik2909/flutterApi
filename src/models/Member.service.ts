@@ -173,7 +173,6 @@ class MemberService {
     if (input.memberImage && member.memberImage) {
       const oldImagePath = path.resolve(member.memberImage);
 
-      // Delete the old image file if it exists
       if (fs.existsSync(oldImagePath)) {
         fs.unlinkSync(oldImagePath);
       }
@@ -260,6 +259,14 @@ class MemberService {
       )
       .exec();
     if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.DELETE_FAILED);
+
+    if (result.memberImage) {
+      const oldImagePath = path.resolve(result.memberImage);
+
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
 
     return result;
   }
