@@ -18,24 +18,10 @@ function getTargetImageStorage(address: any) {
   });
 }
 
-const fileFilter = (req: any, file: any, cb: any) => {
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(
-      new Error("Only images in jpeg, jpg, png and webp formats are accepted!"),
-      false
-    );
-  }
-};
-
 const makeUploader = (address: string) => {
   const storage = getTargetImageStorage(address);
   const upload = multer({
     storage: storage,
-    fileFilter: fileFilter,
     limits: {
       fileSize: 10 * 1024 * 1024,
     },
