@@ -34,9 +34,17 @@ class BookService {
     this.memberService = new MemberService();
   }
 
-  public async createBook(input: BookInput): Promise<Book> {
+  public async createBook(memberId: ObjectId, input: BookInput): Promise<Book> {
     try {
-      return await this.bookModel.create(input);
+      const result = await this.bookModel.create(input);
+
+      await this.memberService.memberStatsEditor({
+        _id: memberId,
+        targetKey: "memberBooks",
+        modifier: 1,
+      });
+
+      return result;
     } catch (err) {
       console.error("Error, model:createBook", err);
       throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
@@ -179,6 +187,12 @@ class BookService {
       .exec();
     if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.DELETE_FAILED);
 
+    await this.memberService.memberStatsEditor({
+      _id: memberId,
+      targetKey: "memberBooks",
+      modifier: -1,
+    });
+
     if (result.bookImages && result.bookImages.length > 0) {
       const currentImages = result.bookImages || [];
 
@@ -251,6 +265,12 @@ class BookService {
       )
       .exec();
     if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.DELETE_FAILED);
+
+    await this.memberService.memberStatsEditor({
+      _id: result.memberId,
+      targetKey: "memberBooks",
+      modifier: -1,
+    });
 
     if (result.bookImages && result.bookImages.length > 0) {
       const currentImages = result.bookImages || [];

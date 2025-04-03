@@ -274,9 +274,7 @@ bookController.createBook = async (req: ExtendedRequest, res: Response) => {
 
     data.memberId = req.member._id;
 
-    console.log();
-
-    const result = await bookService.createBook(data);
+    const result = await bookService.createBook(req.member._id, data);
 
     res.status(HttpCode.OK).json(result);
   } catch (err) {
