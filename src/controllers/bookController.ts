@@ -144,13 +144,11 @@ bookController.retrieveAuth = async (
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      const member = await authService.checkAuth(String(token));
+      if (member) req.member = member;
     }
-
-    let token: any = authHeader.split(" ")[1];
-    token = await authService.checkAuth(String(token));
-    if (token) req.member = token;
 
     next();
   } catch (err: any) {
