@@ -113,8 +113,6 @@ class BookService {
 
     const sort: T = { [inquiry.order]: -1 };
 
-    console.log(match);
-
     const result = await this.bookModel
       .aggregate([
         { $match: match },
@@ -130,6 +128,7 @@ class BookService {
           },
         },
         { $unwind: "$authorData" },
+        { $project: { "authorData.memberPassword": 0 } },
         lookupAuthMemberLiked(memberId),
       ])
       .exec();
