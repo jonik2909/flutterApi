@@ -158,6 +158,11 @@ class MemberService {
         { $skip: (inquiry.page - 1) * inquiry.limit },
         { $limit: inquiry.limit },
         lookupAuthMemberLiked(memberId),
+        {
+          $project: {
+            memberPassword: 0,
+          },
+        },
       ])
       .exec();
 
